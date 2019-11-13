@@ -16,10 +16,13 @@ extern "C" {
 
 class test_ucp_tag_offload : public test_ucp_tag {
 public:
+    test_ucp_tag_offload() {
+        // TODO: test offload and offload MP as different variants
+        enable_tag_mp_offload();
+    }
 
     void init()
     {
-        m_env.push_back(new ucs::scoped_setenv("UCX_RC_TM_ENABLE", "y"));
         test_ucp_tag::init();
         check_offload_support(true);
     }
@@ -64,9 +67,6 @@ public:
         wait(req);
         request_free(req);
     }
-
-protected:
-    ucs::ptr_vector<ucs::scoped_setenv> m_env;
 };
 
 UCS_TEST_P(test_ucp_tag_offload, post_after_cancel)
@@ -417,16 +417,17 @@ UCS_TEST_P(test_ucp_tag_offload_multi, recv_from_multi)
 
 // Do not include SM transports, because they would be selected for tag matching.
 // And since they do not support TM offload, this test would be skipped.
-UCP_INSTANTIATE_TEST_CASE_TLS(test_ucp_tag_offload_multi, all_rcdc,
-                              "\\rc,\\ud,rc_x,dc_x")
+UCP_INSTANTIATE_TEST_CASE_TLS(test_ucp_tag_offload_multi, all_rcdc, "rc,dc")
 
 
 class test_ucp_tag_offload_selection : public test_ucp_tag_offload {
 public:
+    test_ucp_tag_offload_selection() {
+        m_env.push_back(new ucs::scoped_setenv("UCX_RC_TM_ENABLE", "y"));
+    }
 
     void init()
     {
-        m_env.push_back(new ucs::scoped_setenv("UCX_RC_TM_ENABLE", "y"));
         test_ucp_tag::init();
     }
 };
